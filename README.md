@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Overview
 
-## Getting Started
+An app for logging data with inline-editing and creation.
 
-First, run the development server:
+**Requirements**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- On page load, user sees the most recent session with all logs
+- If a log exists, any edits are persisted on blur
+- If a log does not exist, it is lost on refresh.
+- A "log" button persists the entire session. In reality, this just means new logs are created for the session, since any other edits on existing logs happen on blur.
+- A user can create a "new" session, which will have 0 logs
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Constraints**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+In order to simulate a particular project, there will be some constraints:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- No single API gives the data as needed by the page. Cannot combine APIs in an API. It has to be done clientside
+- All data is requested via the UI and formatted on the client :(
 
-## Learn More
+## Motivation
 
-To learn more about Next.js, take a look at the following resources:
+To see if data can flow in an easy-to-understand way.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Technologies
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- next.js - react framework
+- shadcn - ui components
+- react-query - syncing server data
+- drizzle - ORM around a simple sqlite db
