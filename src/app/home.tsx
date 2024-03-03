@@ -44,9 +44,20 @@ export default function Home() {
   })
 
   useEffect(() => {
+    // ideally happens on initial load once we've got all data
     if (sessionData && workoutData && workoutLogData) {
       const sessionId = 1
       setActiveSession(sessionId)
+
+      const defaults = workoutData.map((workout) => {
+        return {
+          id: workout.id,
+          name: workout.name,
+          repititions: null,
+          weight: null,
+          setNumber: 0,
+        }
+      })
 
       const logsForSession = workoutLogData.filter((log) => log.sessionId === sessionId)
 
@@ -66,12 +77,22 @@ export default function Home() {
       })
 
       setWorkoutLogsBySessionId({
-        [-1]: [],
+        [-1]: defaults,
         1: workoutLogs,
       })
-    } else if (!sessionData) {
+    } else if (!sessionData && workoutData) {
+      const defaults = workoutData.map((workout) => {
+        return {
+          id: workout.id,
+          name: workout.name,
+          repititions: null,
+          weight: null,
+          setNumber: 0,
+        }
+      })
+
       setWorkoutLogsBySessionId({
-        [-1]: [],
+        [-1]: defaults,
       })
     }
   }, [sessionData, workoutData, workoutLogData])
