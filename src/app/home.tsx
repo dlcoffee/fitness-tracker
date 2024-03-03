@@ -3,20 +3,19 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
-import { getSessions, getWorkouts } from '@/app/queries'
+import { getSessions, getWorkoutLogs, getWorkouts } from '@/app/queries'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { WorkoutLog, columns } from './columns'
 import { DataTable } from './data-table'
-import { argv0 } from 'process'
 
 type WorkoutLogsBySessionId = Record<string, WorkoutLog[]>
 
 export default function Home() {
   const [workoutLogsBySessionId, setWorkoutLogsBySessionId] = useState<WorkoutLogsBySessionId>({})
-  const [activeSession, setActiveSession] = useState('null')
+  const [activeSession, setActiveSession] = useState(-1)
 
   // Run queries in parallel, but combine once we have all data
   const { data: sessionData, isPending: sessionIsPending } = useQuery({
@@ -29,15 +28,25 @@ export default function Home() {
     queryFn: getWorkouts,
   })
 
+  const { data: workoutLogData, isPending: workoutLogIsPending } = useQuery({
+    queryKey: ['workout_logs'],
+    queryFn: getWorkoutLogs,
+  })
+
   console.log({ sessionData, workoutData })
 
   useEffect(() => {
-    if (sessionData && workoutData) {
-      setActiveSession('1')
+    if (sessionData && workoutData && workoutLogData) {
+      const sessionId = 1
+      setActiveSession(sessionId)
+
+      const logsForSession = workoutLogData.filter((log) => log.sessionId === sessionId)
 
       const workoutLogs = workoutData.map((workout) => {
-        const repititions = 0
-        const weight = 0
+        const currentWorkoutLog = logsForSession.find((log) => log.workoutId === workout.id)
+
+        const repititions = currentWorkoutLog?.repetitions ?? null
+        const weight = currentWorkoutLog?.weight ?? null
 
         return {
           id: workout.id,
@@ -49,17 +58,17 @@ export default function Home() {
       })
 
       setWorkoutLogsBySessionId({
-        null: [],
+        [-1]: [],
         1: workoutLogs,
       })
     } else if (!sessionData) {
       setWorkoutLogsBySessionId({
-        null: [],
+        [-1]: [],
       })
     }
-  }, [sessionData, workoutData])
+  }, [sessionData, workoutData, workoutLogData])
 
-  if (sessionIsPending || workoutIsPending) {
+  if (sessionIsPending || workoutIsPending || workoutLogIsPending) {
     return <div>Loading...</div>
   }
 

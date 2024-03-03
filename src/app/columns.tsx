@@ -8,8 +8,8 @@ import { ColumnDef } from '@tanstack/react-table'
 export type WorkoutLog = {
   id: number
   name: string
-  repititions: number
-  weight: number
+  repititions: number | null
+  weight: number | null
   setNumber: number
 }
 
