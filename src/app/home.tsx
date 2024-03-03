@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 
-import { getSessions, getWorkoutLogs, getWorkouts } from '@/app/queries'
+import { getSessions, getWorkoutLogs, getWorkouts, logWorkout } from '@/app/queries'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +31,10 @@ export default function Home() {
   const { data: workoutLogData, isPending: workoutLogIsPending } = useQuery({
     queryKey: ['workout_logs'],
     queryFn: getWorkoutLogs,
+  })
+
+  const { mutate: log } = useMutation({
+    mutationFn: logWorkout,
   })
 
   console.log({ sessionData, workoutData })
@@ -80,7 +84,7 @@ export default function Home() {
   return (
     <main className="p-24">
       <Button>New</Button>
-      <Button>Log</Button>
+      <Button onClick={() => log()}>Log</Button>
       <Input type="email" placeholder="Email" />
       <div className="p-2">
         <DataTable columns={columns} data={data} />

@@ -6,3 +6,9 @@ export async function GET() {
 
 	return Response.json(result)
 }
+
+export async function PUT(request: Request) {
+	const res = await request.json()
+
+	return Response.json(res)
+}

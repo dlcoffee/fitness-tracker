@@ -32,3 +32,14 @@ export async function getWorkoutLogs(): Promise<WorkoutLog[]> {
 
 	return res.json()
 }
+
+export async function logWorkout() {
+	const body = { foo: 'bar' }
+	const res = await fetch('/api/workout-logs', { method: 'PUT', body: JSON.stringify(body) })
+
+	if (!res.ok) {
+		throw new Error('failed to log workout')
+	}
+
+	return res.json()
+}
