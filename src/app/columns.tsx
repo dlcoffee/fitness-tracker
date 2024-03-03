@@ -1,17 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef, RowData } from '@tanstack/react-table'
 
 import { Input } from '@/components/ui/input'
 
-//import type { Workout } from '@/db/schema'
+declare module '@tanstack/react-table' {
+  interface TableMeta<TData extends RowData> {
+    updateData: (id: string, value: unknown) => void
+  }
+}
 
 // this is joined data from the backend
 export type WorkoutLog = {
   id: string
   name: string
-  repititions: number | null
+  repetitions: number | null
   weight: number | null
   setNumber: number
 }
@@ -24,7 +28,7 @@ export const columns: ColumnDef<WorkoutLog>[] = [
   {
     accessorKey: 'weight',
     header: 'Weight',
-    cell: function Cell({ getValue, row }) {
+    cell: function Cell({ getValue, row, table }) {
       const initialValue = getValue() || ''
       const [value, setValue] = useState(initialValue)
 
@@ -34,11 +38,11 @@ export const columns: ColumnDef<WorkoutLog>[] = [
         if (value) {
           if (value !== data.weight) {
             data.weight = parseInt(value as string)
-            console.log({ id, data })
+            table.options.meta?.updateData(id, data)
           }
         } else if (data.weight) {
           data.weight = null
-          console.log({ id, data })
+          table.options.meta?.updateData(id, data)
         }
       }
 
@@ -62,9 +66,9 @@ export const columns: ColumnDef<WorkoutLog>[] = [
     },
   },
   {
-    accessorKey: 'repititions',
-    header: 'Repititions',
-    cell: function Cell({ getValue, row }) {
+    accessorKey: 'repetitions',
+    header: 'Repetitions',
+    cell: function Cell({ getValue, row, table }) {
       const initialValue = getValue() || ''
       const [value, setValue] = useState(initialValue)
 
@@ -72,13 +76,13 @@ export const columns: ColumnDef<WorkoutLog>[] = [
         const { id, ...data } = { ...row.original }
 
         if (value) {
-          if (value !== data.repititions) {
-            data.repititions = parseInt(value as string)
-            console.log({ id, data })
+          if (value !== data.repetitions) {
+            data.repetitions = parseInt(value as string)
+            table.options.meta?.updateData(id, data)
           }
-        } else if (data.weight) {
-          data.repititions = null
-          console.log({ id, data })
+        } else if (data.repetitions) {
+          data.repetitions = null
+          table.options.meta?.updateData(id, data)
         }
       }
 

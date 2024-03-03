@@ -1,7 +1,6 @@
-import type { Session, Workout, WorkoutLog } from '@/db/schema'
+import type { InsertWorkoutLog, Session, Workout, WorkoutLog } from '@/db/schema'
 
 export async function getSessions(): Promise<Session[]> {
-	console.log('getSessions called')
 	const res = await fetch('/api/sessions')
 
 	if (!res.ok) {
@@ -12,7 +11,6 @@ export async function getSessions(): Promise<Session[]> {
 }
 
 export async function getWorkouts(): Promise<Workout[]> {
-	console.log('getWorkouts called')
 	const res = await fetch('/api/workouts')
 
 	if (!res.ok) {
@@ -23,7 +21,6 @@ export async function getWorkouts(): Promise<Workout[]> {
 }
 
 export async function getWorkoutLogs(): Promise<WorkoutLog[]> {
-	console.log('getWorkoutLogs called')
 	const res = await fetch('/api/workout-logs')
 
 	if (!res.ok) {
@@ -33,8 +30,8 @@ export async function getWorkoutLogs(): Promise<WorkoutLog[]> {
 	return res.json()
 }
 
-export async function logWorkout() {
-	const body = { foo: 'bar' }
+export async function logWorkout(params: InsertWorkoutLog) {
+	const body = params
 	const res = await fetch('/api/workout-logs', { method: 'PUT', body: JSON.stringify(body) })
 
 	if (!res.ok) {

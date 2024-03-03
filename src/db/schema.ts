@@ -43,3 +43,4 @@ export const workoutLogs = sqliteTable('workout_logs', {
 })
 
 export type WorkoutLog = typeof workoutLogs.$inferSelect
+export type InsertWorkoutLog = typeof workoutLogs.$inferInsert

@@ -1,5 +1,3 @@
-'use client'
-
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 import {
@@ -14,19 +12,23 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  updateData: (id: string, value: unknown) => void
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
+  updateData,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (original) => {
-      console.log(original)
       return original.id
+    },
+    meta: {
+      updateData,
     },
   })
 

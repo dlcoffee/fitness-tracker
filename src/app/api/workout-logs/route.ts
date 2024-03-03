@@ -8,7 +8,16 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-	const res = await request.json()
+	const data = await request.json()
+	const { id, ...rest } = data
 
-	return Response.json(res)
+	if (id) {
+		const result = await db
+			.insert(workoutLogs)
+			.values(data) // include "id" here for upsert behavior
+			.onConflictDoUpdate({ target: workoutLogs.id, set: rest })
+		return Response.json(result)
+	}
+
+	return Response.json({ error: 'tbd' })
 }
