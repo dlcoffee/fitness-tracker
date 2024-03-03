@@ -6,7 +6,13 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { getSessions, getWorkoutLogs, getWorkouts, logWorkout } from '@/app/queries'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import { WorkoutLog, columns } from './columns'
 import { DataTable } from './data-table'
@@ -36,8 +42,6 @@ export default function Home() {
   const { mutate: log } = useMutation({
     mutationFn: logWorkout,
   })
-
-  console.log({ sessionData, workoutData })
 
   useEffect(() => {
     if (sessionData && workoutData && workoutLogData) {
@@ -81,11 +85,38 @@ export default function Home() {
   const sessionId = activeSession
   const data = workoutLogsBySessionId[sessionId] || []
 
+  const isNewLog = activeSession < 0
+
   return (
     <main className="p-24">
-      <Button>New</Button>
-      <Button onClick={() => log()}>Log</Button>
-      <Input type="email" placeholder="Email" />
+      <div className="flex justify-end space-x-2 p-2">
+        <Select
+          value={String(activeSession)}
+          onValueChange={(value) => {
+            setActiveSession(parseInt(value))
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Session Id" />
+          </SelectTrigger>
+
+          <SelectContent>
+            {isNewLog && <SelectItem value="-1">--</SelectItem>}
+            {(sessionData || []).map((session) => {
+              return (
+                <SelectItem key={session.id} value={String(session.id)}>
+                  {session.id}
+                </SelectItem>
+              )
+            })}
+          </SelectContent>
+        </Select>
+
+        <Button disabled={isNewLog} onClick={() => setActiveSession(-1)}>
+          New
+        </Button>
+        <Button onClick={() => log()}>Log</Button>
+      </div>
       <div className="p-2">
         <DataTable columns={columns} data={data} />
       </div>

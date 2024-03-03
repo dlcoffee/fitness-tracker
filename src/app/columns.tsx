@@ -31,8 +31,13 @@ export const columns: ColumnDef<WorkoutLog>[] = [
       const handleOnBlur = () => {
         const { id, ...data } = { ...row.original }
 
-        if (value && data.weight !== value) {
-          data.weight = parseInt(value as string)
+        if (value) {
+          if (value !== data.weight) {
+            data.weight = parseInt(value as string)
+            console.log({ id, data })
+          }
+        } else if (data.weight) {
+          data.weight = null
           console.log({ id, data })
         }
       }
@@ -62,8 +67,13 @@ export const columns: ColumnDef<WorkoutLog>[] = [
       const handleOnBlur = () => {
         const { id, ...data } = { ...row.original }
 
-        if (value && data.repititions !== value) {
-          data.repititions = parseInt(value as string)
+        if (value) {
+          if (value !== data.repititions) {
+            data.repititions = parseInt(value as string)
+            console.log({ id, data })
+          }
+        } else if (data.weight) {
+          data.repititions = null
           console.log({ id, data })
         }
       }
