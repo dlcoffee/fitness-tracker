@@ -39,7 +39,7 @@ export default function Home() {
     queryFn: getWorkoutLogs,
   })
 
-  const { mutate: log } = useMutation({
+  const { mutate: mutateLog } = useMutation({
     mutationFn: logWorkout,
   })
 
@@ -51,7 +51,7 @@ export default function Home() {
 
       const defaults = workoutData.map((workout) => {
         return {
-          id: workout.id,
+          id: `session:${-1}|workout:${workout.id}|workout_log:${-1}`,
           name: workout.name,
           repititions: null,
           weight: null,
@@ -63,12 +63,13 @@ export default function Home() {
 
       const workoutLogs = workoutData.map((workout) => {
         const currentWorkoutLog = logsForSession.find((log) => log.workoutId === workout.id)
+        const currentWorkoutLogId = currentWorkoutLog ? String(currentWorkoutLog.id) : -1
 
         const repititions = currentWorkoutLog?.repetitions ?? null
         const weight = currentWorkoutLog?.weight ?? null
 
         return {
-          id: workout.id,
+          id: `session:${sessionId}|workout:${workout.id}|workout_log:${currentWorkoutLogId}`,
           name: workout.name,
           repititions,
           weight,
@@ -83,7 +84,7 @@ export default function Home() {
     } else if (!sessionData && workoutData) {
       const defaults = workoutData.map((workout) => {
         return {
-          id: workout.id,
+          id: `session:${-1}|workout:${workout.id}|workout_log:${-1}`,
           name: workout.name,
           repititions: null,
           weight: null,
@@ -97,14 +98,19 @@ export default function Home() {
     }
   }, [sessionData, workoutData, workoutLogData])
 
+  const log = () => {
+    const data = workoutLogsBySessionId[activeSession] // this is existing data
+    // need to get new logs
+    mutateLog()
+  }
+
   if (sessionIsPending || workoutIsPending || workoutLogIsPending) {
     return <div>Loading...</div>
   }
 
   // display workout data in rows
 
-  const sessionId = activeSession
-  const data = workoutLogsBySessionId[sessionId] || []
+  const data = workoutLogsBySessionId[activeSession] || []
 
   const isNewLog = activeSession < 0
 

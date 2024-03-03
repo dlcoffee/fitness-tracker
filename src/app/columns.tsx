@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 
 // this is joined data from the backend
 export type WorkoutLog = {
-  id: number
+  id: string
   name: string
   repititions: number | null
   weight: number | null
@@ -47,8 +47,12 @@ export const columns: ColumnDef<WorkoutLog>[] = [
         setValue(initialValue)
       }, [initialValue])
 
+      const [session, _workout, workoutLog] = row.id.split('|')
+      const isNew = session.split(':').at(-1) === '-1' || workoutLog.split(':').at(-1) === '-1'
+
       return (
         <Input
+          className={value && isNew ? 'border-solid border-2 border-amber-400' : ''}
           value={value as string}
           onBlur={handleOnBlur}
           onChange={(e) => setValue(e.target.value)}
@@ -83,8 +87,12 @@ export const columns: ColumnDef<WorkoutLog>[] = [
         setValue(initialValue)
       }, [initialValue])
 
+      const [session, _workout, workoutLog] = row.id.split('|')
+      const isNew = session.split(':').at(-1) === '-1' || workoutLog.split(':').at(-1) === '-1'
+
       return (
         <Input
+          className={value && isNew ? 'border-solid border-2 border-amber-400' : ''}
           value={value as string}
           onBlur={handleOnBlur}
           onChange={(e) => setValue(e.target.value)}
