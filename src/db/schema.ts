@@ -3,7 +3,7 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
 export const workouts = sqliteTable('workouts', {
   id: integer('id').primaryKey(),
-  name: text('name'),
+  name: text('name').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -25,12 +25,15 @@ export const sessions = sqliteTable('sessions', {
     .notNull(),
 })
 
+export type Session = typeof sessions.$inferSelect
+
 export const workoutLogs = sqliteTable('workout_logs', {
   id: integer('id').primaryKey(),
-  weight: integer('weight'),
-  reptitions: integer('repetitions'),
+  weight: integer('weight').notNull(),
+  repetitions: integer('repetitions').notNull(),
   workoutId: integer('workout_id').references(() => workouts.id),
   sessionId: integer('session_id').references(() => sessions.id),
+  setNumber: integer('set_number'),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
