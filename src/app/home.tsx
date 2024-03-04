@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
-import { getSessions, getWorkoutLogs, getWorkouts, logWorkout } from '@/app/queries'
+import { createSession, getSessions, getWorkoutLogs, getWorkouts, logWorkout } from '@/app/queries'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -29,6 +29,19 @@ import { InsertWorkoutLog } from '@/db/schema'
 import { WorkoutLog, columns } from './columns'
 
 type WorkoutLogsBySessionId = Record<string, WorkoutLog[]>
+
+function parseIds(rowId: string) {
+  const [session, workout, workoutLog] = rowId.split('|')
+  const workoutId = parseInt(workout.split(':').at(-1) as string)
+  const workoutLogId = parseInt(workoutLog.split(':').at(-1) as string)
+  const sessionId = parseInt(session.split(':').at(-1) as string)
+
+  return {
+    workoutId,
+    workoutLogId,
+    sessionId,
+  }
+}
 
 export default function Home() {
   const [workoutLogsBySessionId, setWorkoutLogsBySessionId] = useState<WorkoutLogsBySessionId>({})
@@ -62,10 +75,20 @@ export default function Home() {
     },
   })
 
+  const { mutateAsync: mutateSession } = useMutation({
+    mutationFn: createSession,
+    onSuccess: () => {
+      // refetch everything
+      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      queryClient.invalidateQueries({ queryKey: ['workouts'] })
+      queryClient.invalidateQueries({ queryKey: ['workout_logs'] })
+    },
+  })
+
   useEffect(() => {
     // ideally happens on initial load once we've got all data
     if (sessionData && workoutData && workoutLogData) {
-      const sessionId = 1
+      const sessionId = sessionData.at(-1)?.id || -1
       setActiveSession(sessionId)
 
       const defaults = workoutData.map((workout) => {
@@ -78,27 +101,33 @@ export default function Home() {
         }
       })
 
-      const logsForSession = workoutLogData.filter((log) => log.sessionId === sessionId)
+      const workoutLogsBySessionId = sessionData.reduce<WorkoutLogsBySessionId>((acc, curr) => {
+        const sessionId = curr.id
+        const logsForSession = workoutLogData.filter((log) => log.sessionId === sessionId)
 
-      const workoutLogs = workoutData.map((workout) => {
-        const currentWorkoutLog = logsForSession.find((log) => log.workoutId === workout.id)
-        const currentWorkoutLogId = currentWorkoutLog ? String(currentWorkoutLog.id) : -1
+        const workoutLogs = workoutData.map((workout) => {
+          const currentWorkoutLog = logsForSession.find((log) => log.workoutId === workout.id)
+          const currentWorkoutLogId = currentWorkoutLog ? String(currentWorkoutLog.id) : -1
 
-        const repetitions = currentWorkoutLog?.repetitions ?? null
-        const weight = currentWorkoutLog?.weight ?? null
+          const repetitions = currentWorkoutLog?.repetitions ?? null
+          const weight = currentWorkoutLog?.weight ?? null
 
-        return {
-          id: `session:${sessionId}|workout:${workout.id}|workout_log:${currentWorkoutLogId}`,
-          name: workout.name,
-          repetitions,
-          weight,
-          setNumber: 0,
-        }
-      })
+          return {
+            id: `session:${sessionId}|workout:${workout.id}|workout_log:${currentWorkoutLogId}`,
+            name: workout.name,
+            repetitions,
+            weight,
+            setNumber: 0,
+          }
+        })
+
+        acc[sessionId] = workoutLogs
+        return acc
+      }, {})
 
       setWorkoutLogsBySessionId({
         [-1]: defaults,
-        1: workoutLogs,
+        ...workoutLogsBySessionId,
       })
     } else if (!sessionData && workoutData) {
       const defaults = workoutData.map((workout) => {
@@ -121,16 +150,11 @@ export default function Home() {
   const data = workoutLogsBySessionId[activeSession] || []
 
   const editLog = (id: string, value: unknown) => {
-    const [session, workout, workoutLog] = id.split('|')
+    const { workoutId, workoutLogId, sessionId } = parseIds(id)
 
-    const workoutId = parseInt(workout.split(':').at(-1) as string)
-    const workoutLogId = parseInt(workoutLog.split(':').at(-1) as string)
-    const sessionId = parseInt(session.split(':').at(-1) as string)
-
-    // just because there is a change, doesnt mean we want to save it yet.
+    // persist in the db if log exists. otherwise, client state
     if (workoutLogId > 0) {
       const v = value as InsertWorkoutLog
-      console.log(v)
 
       mutateLog({
         id: workoutLogId,
@@ -173,17 +197,20 @@ export default function Home() {
     },
   })
 
-  const submit = () => {
+  const submit = async () => {
+    let sessionId = 0
+
+    if (activeSession === -1) {
+      const newSession = await mutateSession({})
+      sessionId = newSession.id
+    }
+
     const { rows } = table.getRowModel() // this might not work. using clientside state might be better!
-    // get log id. if there isn't one create new log with data
-    //
 
     for (const row of rows) {
-      const [session, workout, workoutLog] = row.original.id.split('|')
+      const { sessionId: parsedSessionId, workoutId, workoutLogId } = parseIds(row.original.id)
 
-      const workoutId = parseInt(workout.split(':').at(-1) as string)
-      const workoutLogId = parseInt(workoutLog.split(':').at(-1) as string)
-      const sessionId = parseInt(session.split(':').at(-1) as string)
+      sessionId = sessionId > 0 ? sessionId : parsedSessionId
 
       if (workoutLogId < 0) {
         // is new
@@ -203,7 +230,6 @@ export default function Home() {
         }
       }
     }
-    console.log(rows)
   }
 
   return (

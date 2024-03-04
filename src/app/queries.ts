@@ -1,4 +1,15 @@
-import type { InsertWorkoutLog, Session, Workout, WorkoutLog } from '@/db/schema'
+import type { InsertWorkoutLog, InsertSession, Session, Workout, WorkoutLog } from '@/db/schema'
+
+export async function createSession(params: InsertSession): Promise<Session> {
+	const body = params
+	const res = await fetch('/api/sessions', { method: 'POST', body: JSON.stringify(body) })
+
+	if (!res.ok) {
+		throw new Error('failed to create session')
+	}
+
+	return res.json()
+}
 
 export async function getSessions(): Promise<Session[]> {
 	const res = await fetch('/api/sessions')

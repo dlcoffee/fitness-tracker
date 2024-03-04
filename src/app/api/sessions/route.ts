@@ -6,3 +6,9 @@ export async function GET() {
 
 	return Response.json(result)
 }
+
+export async function POST() {
+	const [result] = await db.insert(sessions).values({}).returning()
+
+	return Response.json(result)
+}

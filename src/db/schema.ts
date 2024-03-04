@@ -26,6 +26,7 @@ export const sessions = sqliteTable('sessions', {
 })
 
 export type Session = typeof sessions.$inferSelect
+export type InsertSession = typeof sessions.$inferInsert
 
 export const workoutLogs = sqliteTable('workout_logs', {
   id: integer('id').primaryKey(),
