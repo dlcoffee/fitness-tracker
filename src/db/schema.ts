@@ -31,8 +31,12 @@ export const workoutLogs = sqliteTable('workout_logs', {
   id: integer('id').primaryKey(),
   weight: integer('weight').notNull(),
   repetitions: integer('repetitions').notNull(),
-  workoutId: integer('workout_id').references(() => workouts.id),
-  sessionId: integer('session_id').references(() => sessions.id),
+  workoutId: integer('workout_id')
+    .references(() => workouts.id)
+    .notNull(),
+  sessionId: integer('session_id')
+    .references(() => sessions.id)
+    .notNull(),
   setNumber: integer('set_number'),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .default(sql`CURRENT_TIMESTAMP`)

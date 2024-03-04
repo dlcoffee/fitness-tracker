@@ -16,6 +16,11 @@ export async function PUT(request: Request) {
 			.insert(workoutLogs)
 			.values(data) // include "id" here for upsert behavior
 			.onConflictDoUpdate({ target: workoutLogs.id, set: rest })
+
+		return Response.json(result)
+	} else {
+		const result = await db.insert(workoutLogs).values(rest)
+
 		return Response.json(result)
 	}
 
